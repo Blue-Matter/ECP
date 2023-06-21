@@ -56,25 +56,30 @@ plot_marg_dens=function(ECP_obj,OMind=1:48, Iind=NULL,yind=1:7, col="#0000ff20")
 
 }
 
-dens_Proj = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:6,col,donam=T){
+dens_Proj = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:6,tail="LB",alp=0.025,col,donam=T,fraclab=F){
 
   PPD = ECP_obj$PPD[,OMind,Iplot,yind,drop=F]
   nsim=dim(PPD)[1]
   ystoplot = yind[apply(PPD,4,function(x){length(unique(as.vector(x)))>(nsim-1)})]
   Yrs = ECP_obj$First_Yr-1+yind
   Obs = ECP_obj$Obs[Iplot,yind]
-  qs=apply(PPD[,,,yind],3,quantile,p=0.95,na.rm=T)
-  plot(c(min(Yrs),max(Yrs)+1),c(0,max(qs,na.rm=T)),col='white',xlab="",ylab="")
+  qs=apply(PPD[,,,yind],3,quantile,p=c(0.001,0.999),na.rm=T)
+  plot(c(min(Yrs),max(Yrs)+1),range(qs,na.rm=T),col='white',xlab="",ylab="")
+  T2textlevL = min(qs,na.rm=T)+(max(qs,na.rm=T)-min(qs,na.rm=T))*0.08
 
   for(yy in yind){
     if(yy %in% ystoplot){
       vec = as.vector(PPD[,,,yy])
-      dens=density(vec,from=0)
-      ys = 0.95*(dens$y / max(dens$y))
+      out = getcrit(vec,vec,tail,alp)
+      crit=out[[1]]
+      for(i in 1:length(crit))lines(Yrs[yy]+c(0,0.95),rep(crit[i],2),col="blue",lty=1)
+      dens=density(vec,na.rm=T)
+      ys = 0.95*(dens$y / max(dens$y,na.rm=T))
       polygon(Yrs[yy]+ys,dens$x,col='#0000ff90',border=NA)
     }
     if(!is.na(Obs[yy])) lines(Yrs[yy]+c(0,0.95),rep(Obs[yy],2),lwd=3)
   }
+  if(fraclab)text(Yrs[1]+1,T2textlevL,paste("Type I =",round(alp*100,2)),col="blue",cex=0.9)
 
   if(donam)mtext(dimnames(PPD)[[3]],line=0.4,font=2,cex=0.85)
 
@@ -96,7 +101,7 @@ getcrit = function(vec,vecalt,tail,alp){
 
 }
 
-dens_Proj_pow = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:8,col,donam=T,powind=1,tail="LB",alp=0.025,fraclab=FALSE){
+dens_Proj_pow = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:8, col, donam=T, powind=1,tail="LB",alp=0.025,fraclab=FALSE){
 
   PPD = ECP_obj$PPD[,OMind,Iplot,yind,drop=F]
   nsim=dim(PPD)[1]
@@ -105,6 +110,7 @@ dens_Proj_pow = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:8,col,donam=
   Obs = ECP_obj$Obs[Iplot,yind]
   qs=apply(PPD[,,,yind],3,quantile,p=c(0.001,0.999),na.rm=T)
   T2textlev = min(qs,na.rm=T)+(max(qs,na.rm=T)-min(qs,na.rm=T))*0.92
+  T2textlevL = min(qs,na.rm=T)+(max(qs,na.rm=T)-min(qs,na.rm=T))*0.08
 
   plot(c(min(Yrs),max(Yrs)+1),range(qs,na.rm=T),col='white',xlab="",ylab="")
   pow = array(ECP_obj$Pow[,OMind,powind],dim(PPD))
@@ -119,26 +125,29 @@ dens_Proj_pow = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:8,col,donam=
       crit=out[[1]]
 
       densnull=density(vecnull,na.rm=T)
-      ysnull = 0.95*(densnull$y / max(densnull$y))
+      ysnull = 0.95*(densnull$y / max(densnull$y,na.rm=T))
       for(i in 1:length(crit))lines(Yrs[yy]+c(0,0.95),rep(crit[i],2),col="blue",lty=1)
 
       densalt=density(vecalt,na.rm=T)
-      ysalt = 0.95*(densalt$y / max(densalt$y))
+      ysalt = 0.95*(densalt$y / max(densalt$y,na.rm=T))
 
       polygon(Yrs[yy]+ysnull,densnull$x,col='#0000ff90', border=NA)
       polygon(Yrs[yy]+ysalt, densalt$x, col='#ff000090', border=NA)
 
       #text(Yrs[yy]+0.6,quantile(vecalt,0.99,na.rm=T),round(out[[2]]*100,0),col="red",cex=0.8)
       text(Yrs[yy]+0.6,T2textlev,round(out[[2]]*100,0),col="red",cex=0.8,srt=-90)
+
     }
     if(!is.na(Obs[yy])) lines(Yrs[yy]+c(0,0.95),rep(Obs[yy],2),lwd=3)
   }
+  text(Yrs[1]+0.6,T2textlev,"Type II =",col='red',cex=0.9)
+  if(fraclab)text(Yrs[1]+1,T2textlevL,paste("Type I =",round(alp*100,2)),col="blue",cex=0.9)
 
   if(donam)mtext(dimnames(PPD)[[3]],line=0.4,font=2,cex=0.75)
 
 }
 
-plot_dist=function(ECP_obj,OMind=1:48, Iind=NULL,yind=1:8,powind=1,tail="LB",alp=0.025){
+plot_dist=function(ECP_obj, OMind=1:48, Iind=NULL, yind=1:8, powind=1, tail="LB", alp=0.025){
 
   if(tail[1]=="auto")tail=autotail(ECP_obj, OMind, Iind, yind, powind)
   if(length(tail)==1)tail=rep(tail,length(Iind))
@@ -150,16 +159,16 @@ plot_dist=function(ECP_obj,OMind=1:48, Iind=NULL,yind=1:8,powind=1,tail="LB",alp
   par(mfrow=c(nr,nc),mai=c(0.25,0.3,0.3,0.025),omi=c(0.15,0.1,0,0))
 
   for(i in 1:(ni-1)){
-    if(is.null(powind)){
-      dens_Proj(ECP_obj, Iplot = Iind[i], OMind = OMind, yind = yind,col=col,fraclab=(i==1))
+    if(is.na(powind)){
+      dens_Proj(ECP_obj, Iplot = Iind[i], OMind = OMind, yind = yind,tail=tail[i],alp=alp,col=col,fraclab=(i==1))
     }else{
-      dens_Proj_pow(ECP_obj, Iplot = Iind[i], OMind = OMind, yind = yind,col=col,powind=powind,tail=tail[i],alp=alp,fraclab=(i==1))
+      dens_Proj_pow(ECP_obj, Iplot = Iind[i], OMind = OMind, yind = yind,col=col,powind=as.numeric(powind),tail=tail[i],alp=alp,fraclab=(i==1))
     }
   }
 
   for(i in 1:((nr*nc)-ni+1))plot(1,1,col="white",xlab="",ylab="",axes=F,main="")
-  if(is.null(powind))legend('center',cex=1.1,legend = c("Predicted","Observed"),text.col=c("#0000ff95",'black'),text.font=2,bty='n')
-  if(!is.null(powind))legend('center',cex=1.1,legend = c("Null","Alternative","Observed"),text.col=c("#0000ff95","#ff000095",'black'),text.font=2,bty='n')
+  if(is.na(powind))legend('center',cex=1.1,legend = c("Predicted","Observed"),text.col=c("#0000ff95",'black'),text.font=2,bty='n')
+  if(!is.na(powind))legend('center',cex=1.1,legend = c("Null","Alternative","Observed"),text.col=c("#0000ff95","#ff000095",'black'),text.font=2,bty='n')
 }
 
 
@@ -431,6 +440,7 @@ pcalc2 = function(PPDn,PPDa,alp,tail){
   trig2[is.na(PPDa[,,1,1])]=NA
 
   for(i in 1:ni){
+
     if(tail[i]=="LB"){
 
       crit = quantile(PPDn[,,i,1],alp,na.rm=T)
@@ -453,8 +463,8 @@ pcalc2 = function(PPDn,PPDa,alp,tail){
     }
 
   }
-  trig2c = trig2 == 0
 
+  trig2c = trig2 == 0
   c(mean(trig1,na.rm=T),mean(trig2c,na.rm=T))
 
 }

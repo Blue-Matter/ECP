@@ -1,0 +1,26 @@
+{
+    "id": "E10E6129",
+    "path": "C:/GitHub/ECP/inst/shiny_apps/ECP/source/Filters.R",
+    "project_path": "inst/shiny_apps/ECP/source/Filters.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1687377525808.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "32,29",
+        "scrollLine": "26"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1687390712,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1687390712091,
+    "read_only": false,
+    "read_only_alternatives": []
+}
