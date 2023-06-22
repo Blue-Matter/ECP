@@ -46,8 +46,9 @@ controlbar <- dashboardControlbar(overlay = FALSE, width=450,skin='light', colla
 sidebar <- dashboardSidebar(
   collapsed = TRUE,
   sidebarMenu(id='sidebar',
-    menuItem("Data Vizualization", tabName = "Viz", icon = icon("upload")),
-    menuItem("ECP Properties", tabName = "prop", icon = icon("chart-bar"))
+    menuItem("Data Projection", tabName = "Viz", icon = icon("stats",lib="glyphicon")),
+    menuItem("Data Correlation", tabName = "Cor", icon = icon("xmark")),
+    menuItem("Power Analysis", tabName = "Pow", icon = icon("chart-line"))
   )
 )
 
@@ -94,8 +95,11 @@ body <- dashboardBody(height = 800,
     tabItem(tabName = "Viz",
             Viz_UI('Viz')
     ),
-    tabItem(tabName = "prop",
-            #Load_UI('load')
+    tabItem(tabName = "Cor",
+            Cor_UI('Cor')
+    ),
+    tabItem(tabName = "Pow",
+           Pow_UI('Pow')
     )
   )
 )

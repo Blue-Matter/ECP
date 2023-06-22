@@ -22,6 +22,8 @@ server <- function(input, output, session) {
 
   FiltersServer('filters', sel)
   VizServer('Viz',sel)
+  CorServer('Cor',sel)
+  PowServer('Pow',sel)
 
   sel$obj = obj
   sel$nFac = ncol(obj$OM_Design)

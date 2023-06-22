@@ -29,14 +29,15 @@ FiltersServer <- function(id, sel) {
                  output$show_filters <- renderUI({
                    tagList(
                      column(12,align = 'left', class='multicol',
+                            hr(),
                             radioGroupButtons(inputId= session$ns("Presets"),
                                                label = "Presets",
                                                choiceNames=names(sel$obj$Defaults),
                                                selected=1,
                                                choiceValues=1:length(sel$obj$Defaults)),
                             hr(),
-                            numericInput(inputId= session$ns("alp"),"Type I error (alpha) (Data-Year)",
-                                         value = sel$obj$Defaults[[1]]$alph,min=0.001,max=0.1,step=0.001),
+                            numericInput(inputId= session$ns("alp"),"% Type I error (alpha) (per Data-Year)",
+                                         value = sel$obj$Defaults[[1]]$alph,min=0.1,max=10,step=0.1),
 
                             hr(),
                             sliderInput(inputId= session$ns("yind"),"Number of projection years",
@@ -71,7 +72,7 @@ FiltersServer <- function(id, sel) {
 
                  observeEvent(input$Presets,{
                    defind=as.numeric(input$Presets)
-                   updateNumericInput(getDefaultReactiveDomain(),'alp',value=sel$obj$Defaults[[defind]]$alph)
+                   updateNumericInput(getDefaultReactiveDomain(),'alp',value=sel$obj$Defaults[[defind]]$alph*100)
                    updateSliderInput(getDefaultReactiveDomain(),'yind',value=as.integer(max(sel$obj$Defaults[[defind]]$yind)))
                    updateRadioButtons(getDefaultReactiveDomain(),'tail',selected= sel$obj$Defaults[[defind]]$tail)
                    updateRadioButtons(getDefaultReactiveDomain(),'pow',selected=sel$obj$Defaults[[defind]]$powind)
@@ -82,7 +83,7 @@ FiltersServer <- function(id, sel) {
                    })
                  })
 
-                 observeEvent(input$alp,{sel$alp=input$alp})
+                 observeEvent(input$alp,{sel$alp=input$alp/100})
                  observeEvent(input$yind,{sel$yind=1:input$yind})
                  observeEvent(input$tail,{sel$tail=input$tail})
                  observeEvent(input$pow,{sel$powind=as.numeric(input$pow)})

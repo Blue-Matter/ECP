@@ -280,7 +280,7 @@ plot_CC<-function(ECP_obj,quanty=0.5,ptcex=0.6,maxn=10,OMind=1:48, Iind=NULL,pow
   pows=out$pows
   ndat = dim(preds)[2]
   ni <- min(ndat,maxn)
-  cols<-c("#0000ff15","black","#ff000045")
+  cols <- c("#0000ff15","black","#ff000045")
   par(mfrow=c(ni-1,ni-1),mai=rep(0,4),omi=c(0.55,0.75,0.05,0.05))
   cutoff= c(quanty/100,(100-quanty)/100)
 
@@ -470,70 +470,109 @@ pcalc2 = function(PPDn,PPDa,alp,tail){
 }
 
 
-plot_Err = function(Err,Iind){
+plot_Err = function(Err,Iind,powind,alp,main){
 
+  if(is.na(powind))Err[2,]=NA
   Err2=Err
   Err2[1,]=1-Err[1,]
   Err2[is.na(Err2)]=1
   Err3=1-apply(Err2,1,cumprod)# total Type I error/ power
+  if(is.na(powind))Err3[,2]=NA
+  Err3[Err3[,1]==0,]=NA
 
   ys = colnames(Err)
   par(mfrow=c(1,2),mai=c(0.4,0.4,0.05,0.05),omi=c(0.4,0.4,0.3,0.01))
   matplot(ys,t(Err),col="white",lty=1,type="l",xlab="",ylab="",ylim=c(0,1))
   grid()
-  matplot(ys,t(Err),col=c("blue","red"),lty=1,type="l",add=T)
-  legend('topright',legend=c("Type I","Type II"),text.col=c("blue","red"),bty="n")
+  matplot(ys,t(Err),col=c("blue","red"),lty=1,type="l",add=T,lwd=2)
+  if(!is.na(powind))legend('topright',legend=c("Type I","Type II"),text.col=c("blue","red"),bty="n")
+  if(is.na(powind))legend('topright',legend=c("Type I"),text.col=c("blue"),bty="n")
 
   matplot(ys,Err3,col="white",lty=1,type="l",xlab="",ylab="",ylim=c(0,1))
   grid()
-  matplot(ys,Err3,col=c("blue","red"),lty=1,type="l",add=T)
-  legend('topleft',legend=c("Cumu. Type I","Cumu. Power"),text.col=c("blue","red"),bty="n")
+  matplot(ys,Err3,col=c("blue","red"),lty=1,type="l",add=T,lwd=2)
+  if(!is.na(powind))legend('topleft',legend=c("Cumu. Type I","Cumu. Power"),text.col=c("blue","red"),bty="n")
+  if(is.na(powind))legend('topleft',legend=c("Cumu. Type I"),text.col=c("blue"),bty="n")
+
   mtext("Rate",side=2,line=0.5,outer=T)
   mtext("Year",side=1,line=0.5,outer=T)
-  mtext(paste0("I = ",paste(Iind,collapse=","),"; Pow = ",powind,"; alpha =",alp),line=0.15,outer=T)
+  if(!is.na(powind)){if(main){mtext(paste0("I = ",paste(Iind,collapse=","),"; Pow = ",powind,"; alpha =",alp),line=0.15,outer=T)}}
+  if(is.na(powind)){if(main){mtext(paste0("I = ",paste(Iind,collapse=","),"; alpha =",alp),line=0.15,outer=T)}}
 
 }
 
 # What if we ran it through all the years
-Seq_Pow_Calc_Marg = function(ECP_obj, OMind = 1:48, Iind=NULL, yind=1:8, powind=1, alp=0.025, tail = "LB",plot=T){
+Seq_Pow_Calc_Marg = function(ECP_obj, OMind = 1:48, Iind=NULL, yind=1:8, powind=1, alp=0.025, tail = "LB",plot=T,main=T){
 
+  if(tail[1]=="auto")tail=autotail(ECP_obj, OMind, Iind, yind, powind)
   if(length(tail)==1)tail=rep(tail,length(Iind))
   if(is.null(Iind))Iind=ECP_obj$Defaults$Data
 
-  PPD = PPDalt = PPDnull = ECP_obj$PPD[,OMind,Iind,yind,drop=F]
-  pow = ECP_obj$Pow[,OMind,powind]
-  nsim=dim(PPD)[1]
-  ystodo = yind[apply(PPD,4,function(x){length(unique(as.vector(x)))>(nsim-1)})]
-  Yrs = ECP_obj$First_Yr-1+yind
-  Obs = ECP_obj$Obs[Iind,yind]
-  qs=apply(PPD[,,,yind],3,quantile,p=1-alp,na.rm=T)
+  if(!is.na(powind[1])){
+
+    PPD = PPDalt = PPDnull = ECP_obj$PPD[,OMind,Iind,yind,drop=F]
+    pow = ECP_obj$Pow[,OMind,powind]
+    nsim=dim(PPD)[1]
+    ystodo = yind[apply(PPD,4,function(x){length(unique(as.vector(x)))>(nsim-1)})]
+    Yrs = ECP_obj$First_Yr-1+yind
+    Obs = ECP_obj$Obs[Iind,yind]
+    qs=apply(PPD[,,,yind],3,quantile,p=1-alp,na.rm=T)
+
+    #if(plot) plot(c(min(Yrs),max(Yrs)+1),c(0,1.05),col='white',xlab="",ylab="")
+    dims=dim(PPD)
+    nsim=dims[1]
+    ny = dims[4]
+    nOM = dims[2]
+
+    nI = length(Iind)
+    Err = array(NA,c(2,ny))
+    rownames(Err) = c("Type I","Type II")
+    colnames(Err) = colnames(ECP_obj$Obs)[1:max(ystodo)]
+
+    powSwitch = array(pow,dim(PPD))
+    PPDnull[powSwitch]=NA
+    PPDalt[!powSwitch]=NA
+    #qst = array(NA,c(nI,ny))
+
+    #if(!tail%in%c("LB","UB"))qst=array(NA,c(2,nI,ny))
+    for(yy in ystodo){
+      PPDn=PPDnull[,,,yy,drop=F]
+      PPDa=PPDalt[,,,yy,drop=F]
+      Err[,yy] = pcalc2(PPDn, PPDa, alp, tail)
+    }
+
+    if(plot)plot_Err(Err,Iind,powind,alp,main)
+    Err
+  }else{
+
+    PPD = PPDalt = PPDnull = ECP_obj$PPD[,OMind,Iind,yind,drop=F]
+    nsim=dim(PPD)[1]
+    ystodo = yind[apply(PPD,4,function(x){length(unique(as.vector(x)))>(nsim-1)})]
+    Yrs = ECP_obj$First_Yr-1+yind
+    Obs = ECP_obj$Obs[Iind,yind]
+    qs=apply(PPD[,,,yind],3,quantile,p=1-alp,na.rm=T)
 
 
-  if(plot) plot(c(min(Yrs),max(Yrs)+1),c(0,1.05),col='white',xlab="",ylab="")
-  dims=dim(PPD)
-  nsim=dims[1]
-  ny = dims[4]
-  nOM = dims[2]
+    #if(plot) plot(c(min(Yrs),max(Yrs)+1),c(0,1.05),col='white',xlab="",ylab="")
+    dims=dim(PPD)
+    nsim=dims[1]
+    ny = dims[4]
+    nOM = dims[2]
+    nI = length(Iind)
+    Err = array(NA,c(2,ny))
+    rownames(Err) = c("Type I","Type II")
+    colnames(Err) = colnames(ECP_obj$Obs)[1:max(ystodo)]
 
-  nI = length(Iind)
-  Err = array(NA,c(2,ny))
-  rownames(Err) = c("Type I","Type II")
-  colnames(Err) = colnames(ECP_obj$Obs)[1:max(ystodo)]
+    for(yy in ystodo){
+      PPDn=PPDnull[,,,yy,drop=F]
+      PPDa=PPDalt[,,,yy,drop=F]
+      Err[,yy] = pcalc2(PPDn, PPDa, alp, tail)
+    }
 
-  powSwitch = array(pow,dim(PPD))
-  PPDnull[powSwitch]=NA
-  PPDalt[!powSwitch]=NA
-  #qst = array(NA,c(nI,ny))
-
-  #if(!tail%in%c("LB","UB"))qst=array(NA,c(2,nI,ny))
-  for(yy in ystodo){
-    PPDn=PPDnull[,,,yy,drop=F]
-    PPDa=PPDalt[,,,yy,drop=F]
-    Err[,yy] = pcalc2(PPDn, PPDa, alp, tail)
+    if(plot)plot_Err(Err,Iind,powind,alp,main)
+    Err
+    #plot(1,1,col="white",axes=F,xlab="",ylab="",main="")
   }
-
-  if(plot)plot_Err(Err,Iind)
-  Err
 }
 
 codegone<-function(){
