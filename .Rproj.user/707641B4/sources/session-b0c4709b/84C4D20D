@@ -1,0 +1,26 @@
+{
+    "id": "84C4D20D",
+    "path": "C:/GitHub/Slick/inst/shiny_apps/Slick/ui.R",
+    "project_path": null,
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1689801419567.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "229,11",
+        "scrollLine": "193"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1689801637,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1689801637211,
+    "read_only": false,
+    "read_only_alternatives": []
+}

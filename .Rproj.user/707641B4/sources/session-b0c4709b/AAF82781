@@ -1,0 +1,26 @@
+{
+    "id": "AAF82781",
+    "path": "C:/GitHub/ECP/inst/shiny_apps/ECP/ui.R",
+    "project_path": "inst/shiny_apps/ECP/ui.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1689801335390.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "32,26",
+        "scrollLine": "16"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1689801452,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1689801452136,
+    "read_only": false,
+    "read_only_alternatives": []
+}

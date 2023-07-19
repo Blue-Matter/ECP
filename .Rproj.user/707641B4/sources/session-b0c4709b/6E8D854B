@@ -1,26 +1,26 @@
 {
-    "id": "F5734424",
-    "path": "C:/GitHub/ECP/R/Plotting.R",
-    "project_path": "R/Plotting.R",
+    "id": "6E8D854B",
+    "path": "C:/GitHub/Slick/inst/shiny_apps/Slick/server.R",
+    "project_path": null,
     "type": "r_source",
-    "hash": "486280372",
+    "hash": "0",
     "contents": "",
     "dirty": false,
-    "created": 1687498736885.0,
+    "created": 1689801383341.0,
     "source_on_save": false,
-    "relative_order": 2,
+    "relative_order": 3,
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "689,1",
-        "scrollLine": "674"
+        "cursorPosition": "79,93",
+        "scrollLine": "50"
     },
     "folds": "",
-    "lastKnownWriteTime": 1687498811,
+    "lastKnownWriteTime": 1687218852,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1687498811845,
+    "last_content_update": 1687218852,
     "read_only": false,
     "read_only_alternatives": []
 }
