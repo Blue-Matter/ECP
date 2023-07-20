@@ -1,0 +1,223 @@
+---
+title: 'ECP Object Formatting Guide'
+author: "Tom Carruthers (<tom@bluematterscience.com>)"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+  rmarkdown::html_vignette:
+    number_sections: no
+    toc: yes
+  rmarkdown::pdf_vignette:
+    number_sections: no
+    toc: yes
+subtitle: Exceptional Circumstances Protocols for Adopted Management Procedures
+vignette: |
+  %\VignetteIndexEntry{ABT-MSE} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
+---
+
+<style type="text/css">
+
+body{ /* Normal  */
+   font-size: 12px;
+}
+td {  /* Table  */
+   font-size: 8px;
+}
+h1 { /* Header 1 */
+ font-size: 18px;
+ color: DarkBlue;
+}
+h2 { /* Header 2 */
+ font-size: 15px;
+ color: DarkBlue;
+}
+h3 { /* Header 3 */
+ font-size: 14px;
+ color: DarkBlue;
+}
+code.r{ /* Code block */
+  font-size: 10px;
+}
+pre { /* Code block */
+  font-size: 10px
+}
+</style>
+
+
+```{r set options, echo = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+knitr::opts_chunk$set(dpi=85)
+options(width = 650)
+```
+
+
+```{r loadsecret,echo=F,warning=F,error=F,message=F}
+library(ECP)
+setwd("G:/Shared drives/BM shared/1. Projects/Bluefin_ECP/code")
+obj=readRDS(file="ECP_obj_SOO.rda")
+
+```
+
+<br>
+
+# Introduction to Exceptional Circumstances Protocols
+
+A principal motivation behind management strategy evaluation (MSE) and the management procedure (MP) approach was originally to lessen the need for frequent use of more complex and comprehensive stock assessment processes (and associated ‘tinkering’, Butterworth 2008). It follows that in most settings, MPs are adopted for an agreed period of time after which a formal review of the MP is scheduled (e.g., the 5-year interval for reviews of MP implementation by the International Whaling Commission, IWC 1999; the 6-year interval for reviews of the MP adopted by ICCAT (2022)). 
+
+
+It is however considered best practice to establish protocols for detecting situations where the observed system dynamics are not consistent with the range of simulations specified in the operating model, over which the adopted MP was demonstrated to be robust (Butterworth 2008). Exceptional circumstances (EC) protocols typically compare new, updated observations of the data used by the MP with the simulated values from the MSE projections (‘posterior predicted data’).They can also involve a check of the assumptions used to condition the models or characterize the axes of  uncertainty. It is also prudent to consider which  robustness OMs the MP was particularly vulnerable to as this will highlight which conditions will cause the MP to provide bad advice.
+
+<br>
+
+# Objective of this document
+
+This document is intended to guide the reader (an experience R programmer and MSE technical specialist) through how to organize posterior predicted data and real observations into an ECP object that can be uploaded to the ECP App.  
+
+<br>
+
+
+# Installing from the ECP Github repository and running the App. 
+
+A public GitHub repository contains all of the code for running the ECP App. 
+
+https://github.com/blue-matter/ECP
+
+
+The package can installed with:
+
+```{r install, eval=F}
+devtools::install_github('blue-matter/ECP',dependencies=T)
+```
+
+And then run with: 
+
+```{r run, eval=F}
+library(ECP)
+ECPapp()
+```
+
+<br>
+
+# The ECP object
+
+The ECP object is a list object with the following named slots: 
+
+```
+
+  PPD           Posterior Predicted Data        numeric      4D array          [Sim, OM, Type, Year]     
+  OM_Design     Operating Model Design Grid     factor       data.frame        [OM, OM Factor]
+  Defaults      Default Indicator Selections    character    nested list       [[nDefaults]][[6]]  
+  Obs           Observed Index data             numeric      matrix            [Type, Year]
+  Pow           Definition of Null/Alt sims     logical      3D array          [Sim, OM, nPow]
+  First_Yr      The first projection year       numeric
+  Version       The ECP App Version used        character
+  Sys.time      When the object was made        character
+ 
+```
+
+<br>
+
+## More on the PPD 
+
+Note that the dimnames of the PPD object are used in labelling in the App so you need to make sure you get these right:
+
+```{r PPD}
+dimnames(obj$PPD)
+```
+<br>
+
+## More on the OM_Design 
+
+OM_Design describes the OM numbers in terms of factors (columns) and their corresponding levels (OMs)
+
+```{r OM_Design}
+head(obj$OM_Design)
+```
+Again, the column names will be used in the App UI so make sure they correspond with real factors in your OM design. 
+
+Obviously the number of rows must be the same as the number of operating models used in other slots such as PPD. 
+
+<br>
+
+## More on the Defaults slot
+
+Each of the list positions (there should be at least one default) is a named default indicator: 
+
+```{r Defaults}
+names(obj$Defaults)
+```
+
+For any one of these defaults there are a list of 6 positions:
+
+```{r Defaults2}
+names(obj$Defaults$Standard)
+```
+These describe the index of the data (which data types), year, OM, alpha (Type I error), power indicator (the index corresponding to the definition of null/alternative sets - see Pow slot) and tail (interval, LB, UB, auto) of this particular default. 
+
+
+```{r Defaults3}
+obj$Defaults$Standard
+```
+In this example $powind was NaN meaning that the 'standard' default here has no power analysis, it is just Type I error only. 
+
+You can see that the OM list position is itself a list that has as many positions as the OM_Design has columns (factor levels). Each position here is a factor level and, in a vector, the levels of each factor to be included in the default are described. These must match the factor levels in OM_Design.
+
+<br>
+
+
+## More on the Obs slot
+
+The Obs slot is where real observations of the various indicators are stored. They can be NaN if not available. This is just an array n data types by nyears, the dimensions of which should match other slots such as PPD: 
+
+```{r Obs}
+head(obj$Obs)
+```
+
+Note that the dimnames should also match PPD etc. 
+
+<br>
+
+## More on the Pow slot
+
+This is all about defining Null and Alternative sets of simulations for use in Power analysis
+
+Lets take a look at the third definition of Null/Alternative sets for the first 10 operating models and 5 simulations: 
+
+```{r Pow}
+obj$Pow[1:5,1:10,3]
+
+```
+
+Where TRUE is entered, for this simulaton and OM this is considered to be from the Alternative set (where we would wish ECP to be triggered). FALSE represents a simulation / OM of the Null set where we would wish ECP not to be triggered. 
+
+<br>
+
+## More on the First_Yr, Version and Sys.time slots
+
+Self-explanatory really:
+
+```{r more}
+obj[6:8]
+
+```
+
+<br>
+
+# Using the new ECP object
+
+You can either upload the new object to the ECP app or you can overwrite the file 'C:/GitHub/ECP/inst/shiny_apps/ECP/data/ECP_obj_SOO.rda' in the shiny app directory of the downloaded github repo and run it from Rstudio. 
+
+<br>
+
+# Support
+
+For help with the ECP app, feel free to contact me at tom@bluematterscience.com
+
+
+
+
