@@ -420,8 +420,9 @@ pcalc = function(qsa,PPDn,PPDa,tail,qsa2=NULL){
     T1 = mean(apply(PPDn>qsa,1:2,sum)>0,na.rm=T)
     T2 = 1-mean(apply(PPDa>qsa,1:2,sum)>0,na.rm=T) # all indices have to not have been triggered
   }else{
+    ni=dim(qsa)[3]
     T1 = mean(apply(PPDn<qsa | PPDn>qsa2 ,1:2,sum),na.rm=T)
-    T2 = 1-mean(apply(PPDa<qsa | PPDa>qsa2 ,1:2,sum),na.rm=T) # all indices have to not have been triggered
+    T2 = mean(apply(PPDa>qsa & PPDa<qsa2 ,1:2,sum)==ni,na.rm=T) # all indices have to not have been triggered
   }
 
   c(T1=T1,T2=T2)
@@ -436,8 +437,8 @@ pcalc2 = function(PPDn,PPDa,alp,tail){
   trig1 = array(FALSE, dim(PPDn)[1:2])
   #trig1[is.na(PPDn[,,1,1])]=NA
 
-  trig2 = array(0,  dim(PPDn)[1:2]) # issue is here
-  trig2[is.na(PPDa[,,1,1])]=NA
+  trig2 = array(TRUE,  dim(PPDn)[1:2]) # issue is here
+  #trig2[is.na(PPDa[,,1,1])]=NA
 
   for(i in 1:ni){
 
@@ -445,27 +446,27 @@ pcalc2 = function(PPDn,PPDa,alp,tail){
 
       crit = quantile(PPDn[,,i,1],alp,na.rm=T)
       trig1[] = trig1[] | (PPDn[,,i,1]<crit)
-      trig2[] = trig2[] + as.integer(PPDa[,,i,1]<crit)
+      trig2[] = trig2[] & (PPDa[,,i,1]>crit)
 
     }else if(tail[i]=="UB"){
 
       crit = quantile(PPDn[,,i,1],1-alp,na.rm=T)
       trig1[] = trig1[] | (PPDn[,,i,1]>crit)
-      trig2[] = trig2[] + as.integer(PPDa[,,i,1]>crit)
+      trig2[] = trig2[] & (PPDa[,,i,1]<crit)
 
     }else{
 
       critLB = quantile(PPDn[,,i,1],alp/2,na.rm=T)
       critUB = quantile(PPDn[,,i,1],1-(alp/2),na.rm=T)
       trig1[] = trig1[] | ((PPDn[,,i,1] < critLB) | (PPDn[,,i,1] > critUB))
-      if(i > 1) trig2[] = trig2[] + as.integer(((PPDa[,,i,1] < critLB) & (PPDa[,,i,1] > critUB)))
+      trig2[] = trig2[] & ((PPDa[,,i,1] > critLB) & (PPDa[,,i,1] < critUB))
 
     }
 
   }
 
-  trig2c = trig2 == 0
-  c(mean(trig1,na.rm=T),mean(trig2c,na.rm=T))
+  #trig2c = trig2 == 0
+  c(mean(trig1,na.rm=T),mean(trig2,na.rm=T))
 
 }
 
@@ -505,8 +506,8 @@ plot_Err = function(Err,Iind,powind,alp,main){
 Seq_Pow_Calc_Marg = function(ECP_obj, OMind = 1:48, Iind=NULL, yind=1:8, powind=1, alp=0.025, tail = "LB",plot=T,main=T){
 
   if(tail[1]=="auto")tail=autotail(ECP_obj, OMind, Iind, yind, powind)
-  if(length(tail)==1)tail=rep(tail,length(Iind))
-  if(is.null(Iind))Iind=ECP_obj$Defaults$Data
+   if(is.null(Iind))Iind=ECP_obj$Defaults$Primary$Data
+   if(length(tail)==1)tail=rep(tail,length(Iind))
 
   if(!is.na(powind[1])){
 

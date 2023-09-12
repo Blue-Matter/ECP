@@ -1,0 +1,10 @@
+ECP_obj = readRDS("G:/Shared drives/BM shared/1. Projects/Bluefin_ECP/code/ECP_obj_final.rda")
+
+OMind = 1:48
+Iind=NULL
+yind=1:8
+powind=2
+alp=0.025
+tail = "LB"
+plot=T
+main=T

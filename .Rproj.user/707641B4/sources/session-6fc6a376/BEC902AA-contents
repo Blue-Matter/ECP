@@ -1,0 +1,28 @@
+Package: ECP
+Type: Package
+Title: Exceptional Circumstances Protocols
+Version: 0.1.6
+Authors@R: c(person("Tom", "Carruthers",, "tom@bluematterscience.com", c("aut", "cre")))
+Maintainer: Tom Carruthers <tom@bluematterscience.com>
+Description: A Shiny App for plotting posterior predicted data from MSE and designing ECP
+License: GPL-3
+Imports:
+    cowplot,
+    dplyr,
+    DT,
+    ggrepel,
+    ggplot2,
+    readxl,
+    shiny,
+    shinyBS,
+    shinydashboard,
+    shinydashboardPlus,
+    shinyjs,
+    shinyalert,
+    shinycssloaders,
+    shinyWidgets,
+    tidyr
+Depends:
+    R (>= 4.0.1)
+Encoding: UTF-8
+LazyData: true

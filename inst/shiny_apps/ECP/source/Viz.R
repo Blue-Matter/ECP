@@ -9,7 +9,7 @@ VizServer <- function(id, sel) {
                        #plot_dist(sel$obj,OMind=sel$OMind, Iind=sel$Iind,yind=sel$yind,powind=sel$powind,tail=sel$tail,alp=sel$alp)
                        plot_dist(sel$obj,OMind=sel$OMind, Iind=sel$Iind,yind=sel$yind,powind=sel$powind,tail=sel$tail,alp=sel$alp)
 
-                      },height=700)
+                      },height=850)
 
 
                    )})
