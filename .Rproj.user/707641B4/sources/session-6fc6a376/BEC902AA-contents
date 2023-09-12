@@ -1,7 +1,7 @@
 Package: ECP
 Type: Package
 Title: Exceptional Circumstances Protocols
-Version: 0.1.6
+Version: 1.0.1
 Authors@R: c(person("Tom", "Carruthers",, "tom@bluematterscience.com", c("aut", "cre")))
 Maintainer: Tom Carruthers <tom@bluematterscience.com>
 Description: A Shiny App for plotting posterior predicted data from MSE and designing ECP

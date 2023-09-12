@@ -73,7 +73,7 @@ dens_Proj = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:6,tail="LB",alp=
       out = getcrit(vec,vec,tail,alp)
       crit=out[[1]]
       for(i in 1:length(crit))lines(Yrs[yy]+c(0,0.95),rep(crit[i],2),col="blue",lty=1)
-      dens=density(vec,na.rm=T)
+      dens=densalator(vec)
       ys = 0.95*(dens$y / max(dens$y,na.rm=T))
       polygon(Yrs[yy]+ys,dens$x,col='#0000ff90',border=NA)
     }
@@ -101,6 +101,18 @@ getcrit = function(vec,vecalt,tail,alp){
 
 }
 
+
+densalator = function(vec){
+
+  if(all(vec>0,na.rm=T)){
+    dens = density(log(vec),na.rm=T)
+    dens$x = exp(dens$x)
+  }else{
+    dens = density(vec,na.rm=T)
+  }
+  dens
+}
+
 dens_Proj_pow = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:8, col, donam=T, powind=1,tail="LB",alp=0.025,fraclab=FALSE){
 
   PPD = ECP_obj$PPD[,OMind,Iplot,yind,drop=F]
@@ -108,7 +120,7 @@ dens_Proj_pow = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:8, col, dona
   ystoplot = yind[apply(PPD,4,function(x){length(unique(as.vector(x)))>(nsim-1)})]
   Yrs = ECP_obj$First_Yr-1+yind
   Obs = ECP_obj$Obs[Iplot,yind]
-  qs=apply(PPD[,,,yind],3,quantile,p=c(0.001,0.999),na.rm=T)
+  qs=apply(PPD[,,,yind],3,quantile,p=c(0.0001,0.999),na.rm=T)
   T2textlev = min(qs,na.rm=T)+(max(qs,na.rm=T)-min(qs,na.rm=T))*0.92
   T2textlevL = min(qs,na.rm=T)+(max(qs,na.rm=T)-min(qs,na.rm=T))*0.08
 
@@ -124,11 +136,11 @@ dens_Proj_pow = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:8, col, dona
       out = getcrit(vecnull,vecalt,tail,alp)
       crit=out[[1]]
 
-      densnull=density(vecnull,na.rm=T)
+      densnull=densalator(vecnull)
       ysnull = 0.95*(densnull$y / max(densnull$y,na.rm=T))
       for(i in 1:length(crit))lines(Yrs[yy]+c(0,0.95),rep(crit[i],2),col="blue",lty=1)
 
-      densalt=density(vecalt,na.rm=T)
+      densalt=densalator(vecalt)
       ysalt = 0.95*(densalt$y / max(densalt$y,na.rm=T))
 
       polygon(Yrs[yy]+ysnull,densnull$x,col='#0000ff90', border=NA)
@@ -147,28 +159,37 @@ dens_Proj_pow = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:8, col, dona
 
 }
 
-plot_dist=function(ECP_obj, OMind=1:48, Iind=NULL, yind=1:8, powind=1, tail="LB", alp=0.025){
+plot_dist=function(ECP_obj =NULL, OMind=1:48, Iind=1:10, yind=1:8, powind=1, tail="LB", alp=0.025){
 
-  if(tail[1]=="auto")tail=autotail(ECP_obj, OMind, Iind, yind, powind)
-  if(length(tail)==1)tail=rep(tail,length(Iind))
+  #if(is.null(ECP_obj)|is.null(Iind)|is.null(OMind)|is.null(yind)|is.null(powind)|is.null(tail)|is.null(alp)){
+  #  plot.new()
+  #}else{
 
-  if(is.null(Iind))Iind=ECP_obj$Defaults$Data
-  ni = length(Iind)+1
-  nc=ceiling(ni^0.5)
-  nr=ceiling(ni/nc)
-  par(mfrow=c(nr,nc),mai=c(0.25,0.3,0.3,0.025),omi=c(0.15,0.1,0,0))
+    if(tail[1]=="auto")tail=autotail(ECP_obj, OMind, Iind, yind, powind)
+    if(length(tail)==1)tail=rep(tail,length(Iind))
 
-  for(i in 1:(ni-1)){
-    if(is.na(powind)){
-      dens_Proj(ECP_obj, Iplot = Iind[i], OMind = OMind, yind = yind,tail=tail[i],alp=alp,col=col,fraclab=(i==1))
-    }else{
-      dens_Proj_pow(ECP_obj, Iplot = Iind[i], OMind = OMind, yind = yind,col=col,powind=as.numeric(powind),tail=tail[i],alp=alp,fraclab=(i==1))
+    if(is.null(Iind))Iind=ECP_obj$Defaults$Data
+    ni = length(Iind)
+    nc=ceiling(ni^0.5)
+    nr=ceiling(ni/nc)
+    par(mfrow=c(nr,nc),mai=c(0.25,0.3,0.3,0.025),omi=c(0.15,0.1,0,0))
+
+    for(i in 1:ni){
+
+      if(is.na(powind)){
+        dens_Proj(ECP_obj, Iplot = Iind[i], OMind = OMind, yind = yind,tail=tail[i],alp=alp,col=col,fraclab=(i==1))
+      }else{
+        dens_Proj_pow(ECP_obj, Iplot = Iind[i], OMind = OMind, yind = yind,col=col,powind=as.numeric(powind),tail=tail[i],alp=alp,fraclab=(i==1))
+      }
+      if(i==1){
+        nspc = 3
+        if(is.na(powind))legend('left',cex=1,legend = c(rep(".",nspc),"Predicted","Observed"),text.col=c(rep("white",nspc),"#0000ff95",'black'),text.font=2,bty='n')
+        if(!is.na(powind))legend('left',cex=1,legend = c(rep(".",nspc),"Null","Alternative","Observed"),text.col=c(rep("white",nspc),"#0000ff95","#ff000095",'black'),text.font=2,bty='n')
+      }
     }
-  }
 
-  for(i in 1:((nr*nc)-ni+1))plot(1,1,col="white",xlab="",ylab="",axes=F,main="")
-  if(is.na(powind))legend('center',cex=1.1,legend = c("Predicted","Observed"),text.col=c("#0000ff95",'black'),text.font=2,bty='n')
-  if(!is.na(powind))legend('center',cex=1.1,legend = c("Null","Alternative","Observed"),text.col=c("#0000ff95","#ff000095",'black'),text.font=2,bty='n')
+    #for(i in 1:((nr*nc)-ni+1))plot(1,1,col="white",xlab="",ylab="",axes=F,main="")
+  #} # end of is NULL ecp_obj
 }
 
 

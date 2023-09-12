@@ -24,14 +24,14 @@ SettingsUI <- function(id, label="settings") {
 
 # -- header ----
 header <- shinydashboardPlus::dashboardHeader(
-  leftUi = tagList(
-    dropdownButton(
-      label = "Help",
-      icon = icon("info"),
-      status = "primary",
-      circle = FALSE,
-      uiOutput("language")
-    )),
+  #leftUi = tagList(
+  #  dropdownButton(
+   #   label = "Help",
+    #  icon = icon("info"),
+     # status = "primary",
+    #  circle = FALSE,
+    #  uiOutput("language")
+    #)),
   controlbarIcon=shiny::icon('gears')
 )
 
