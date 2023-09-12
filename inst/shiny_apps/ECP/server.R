@@ -17,7 +17,7 @@ server <- function(input, output, session) {
                         tail=FALSE)
 
 
-  obj  = readRDS("./data/ECP_obj_SOO.rda")
+  obj  = readRDS("./data/ECP_obj_final.rda")
   # sel = list(obj=obj)
 
   FiltersServer('filters', sel)
