@@ -159,7 +159,7 @@ dens_Proj_pow = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:8, col, dona
 
 }
 
-plot_dist=function(ECP_obj =NULL, OMind=1:48, Iind=1:10, yind=1:8, powind=1, tail="LB", alp=0.025){
+plot_dist=function(ECP_obj =NULL, OMind=1:48, Iind=1:10, yind=1:8, powind=1, tail="LB", alp=0.025, legloc="left",nspc=3){
 
   #if(is.null(ECP_obj)|is.null(Iind)|is.null(OMind)|is.null(yind)|is.null(powind)|is.null(tail)|is.null(alp)){
   #  plot.new()
@@ -182,9 +182,8 @@ plot_dist=function(ECP_obj =NULL, OMind=1:48, Iind=1:10, yind=1:8, powind=1, tai
         dens_Proj_pow(ECP_obj, Iplot = Iind[i], OMind = OMind, yind = yind,col=col,powind=as.numeric(powind),tail=tail[i],alp=alp,fraclab=(i==1))
       }
       if(i==1){
-        nspc = 3
-        if(is.na(powind))legend('left',cex=1,legend = c(rep(".",nspc),"Predicted","Observed"),text.col=c(rep("white",nspc),"#0000ff95",'black'),text.font=2,bty='n')
-        if(!is.na(powind))legend('left',cex=1,legend = c(rep(".",nspc),"Null","Alternative","Observed"),text.col=c(rep("white",nspc),"#0000ff95","#ff000095",'black'),text.font=2,bty='n')
+        if(is.na(powind))legend(legloc,cex=1,legend = c(rep(".",nspc),"Predicted","Observed"),text.col=c(rep("white",nspc),"#0000ff95",'black'),text.font=2,bty='n')
+        if(!is.na(powind))legend(legloc,cex=1,legend = c(rep(".",nspc),"Null","Alternative","Observed"),text.col=c(rep("white",nspc),"#0000ff95","#ff000095",'black'),text.font=2,bty='n')
       }
     }
 
@@ -227,7 +226,7 @@ do_stz=function(ECP_obj,Iind,OMind){
 
 }
 
-PPD_qplot_stz = function(ps, qs,Obss, Yrs, yind, col){
+PPD_qplot_stz = function(ps, qs,Obss, Yrs, yind, col,adj){
 
   ylim = range(qs,Obss,na.rm=T)
   matplot(Yrs,t(qs),col="white",ylim=ylim,xlab="",ylab="") #;  grid()
@@ -252,12 +251,12 @@ PPD_qplot_stz = function(ps, qs,Obss, Yrs, yind, col){
     hasval=!is.na(ob1)
     maxy = max(Yrs[hasval])
     lastob = ob1[match(maxy,Yrs)]
-    text(maxy+1,lastob,dimnames(Obss)[[1]][i],col=cols[i],font=2,cex=0.9)
+    text(maxy+adj,lastob,dimnames(Obss)[[1]][i],col=cols[i],font=2,cex=0.9)
   }
 
 }
 
-PPD_stz = function(PPDs, Obss, yind = 2:6, col){
+PPD_stz = function(PPDs, Obss, yind = 2:6, col,adj){
   ints = c(99,95,90,50)
   lps = ((100-ints)/2)/100
   ps = c(lps, rev(1-lps))
@@ -268,17 +267,17 @@ PPD_stz = function(PPDs, Obss, yind = 2:6, col){
   ps = c(lps, rev(1-lps))
   qs = apply(PPDs[,,,yind, drop=F], 4, quantile, p=ps, na.rm=T)
   Yrs = ECP_obj$First_Yr-1 + yind
-  PPD_qplot_stz(ps, qs,Obss, Yrs, yind, col=col)
-  PPD_qplot_stz(ps, qs,Obss, Yrs, yind, col=col)
+  PPD_qplot_stz(ps, qs,Obss, Yrs, yind, col=col,adj=adj)
+  #PPD_qplot_stz(ps, qs,Obss, Yrs, yind, col=col)
 }
 
-plot_all_marg_dens=function(ECP_obj,OMind=1:48, Iind=NULL,yind=2:6, col="#0000ff20"){
+plot_all_marg_dens=function(ECP_obj,OMind=1:48, Iind=NULL,yind=2:6, col="#0000ff20",adj=1){
 
   layout(matrix(c(1,2),nrow=1),widths=c(1,0.35))
   par(mai=c(0.8,0.8,0.01,0.01))
   if(is.null(Iind))Iind=ECP_obj$Defaults$Data
   stz = do_stz(ECP_obj,Iind,OMind)
-  PPD_stz(PPDs = stz$PPDs,Obss = stz$Obss,yind,col)
+  PPD_stz(PPDs = stz$PPDs,Obss = stz$Obss,yind,col,adj=adj)
   mtext('Year',1,line=2.5,outer=F,font=2)
   mtext('Standardized log index value',2,line=2.5,outer=F,font=2)
   plot(1,1,col="white",xlab="",ylab="",axes=F,main="")
