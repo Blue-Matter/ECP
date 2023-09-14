@@ -172,7 +172,7 @@ plot_dist=function(ECP_obj =NULL, OMind=1:48, Iind=1:10, yind=1:8, powind=1, tai
     ni = length(Iind)
     nc=ceiling(ni^0.5)
     nr=ceiling(ni/nc)
-    par(mfrow=c(nr,nc),mai=c(0.25,0.3,0.3,0.025),omi=c(0.15,0.1,0,0))
+    par(mfrow=c(nr,nc),mai=c(0.25,0.35,0.3,0.1),omi=c(0.15,0.1,0,0))
 
     for(i in 1:ni){
 
@@ -420,7 +420,7 @@ plot_marg_dens_pow=function(ECP_obj,OMind=1:48, Iind=NULL,yind=1:7,
   ni = length(Iind)+1
   nr=ceiling(ni^0.5)
   nc=ceiling(ni/nr)
-  par(mfrow=c(nr,nc),mai=c(0.3,0.3,0.35,0.025),omi=c(0.3,0.3,0,0))
+  par(mfrow=c(nr,nc),mai=c(0.3,0.35,0.35,0.03),omi=c(0.3,0.3,0,0))
 
   for(i in 1:(ni-1))    PPD_Proj_pow(ECP_obj, Iplot = Iind[i], OMind = OMind, yind = yind,powind=powind,cols=cols,line=line,plotcrit=plotcrit)
   for(i in 1:((nr*nc)-ni+1))plot(1,1,col="white",xlab="",ylab="",axes=F,main="")

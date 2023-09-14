@@ -1,0 +1,112 @@
+library(ECP)
+library(ABTMSE)
+library(corpcor)
+packageVersion('ABTMSE')
+
+setwd("G:/Shared drives/BM shared/1. Projects/Bluefin_ECP")
+source('code/ECP source.R') # load BR
+
+ECP_obj = readRDS(file="code/ECP_obj_final.rda")
+Iind_all = c(ECP_obj$Defaults$Data,15:16) # default indices
+
+DR = Design$Design_Ref
+OM2 = (1:nrow(DR))[DR[,1]==2]
+OM3 = (1:nrow(DR))[DR[,1]==3]
+OM23 = (1:nrow(DR))[DR[,1]%in%c(2,3)]
+
+yind = 1:8
+h1 = 4; w1 = 8
+h2 = 5; w2 = 9
+h3 = 8; w3 = 9
+h4 = 9; w4 = 10
+
+# --- Primary ----------------------------
+
+def=1
+OMind =1:48; Iind = ECP_obj$Defaults[[def]]$Data; powind=ECP_obj$Defaults[[def]]$powind; tail=ECP_obj$Defaults[[def]]$tail; alp = ECP_obj$Defaults[[def]]$alph
+
+jpeg('figures_SCRS/1a Primary.jpg',res=400,height=h1,width=w1,units="in")
+   plot_dist(ECP_obj, OMind, Iind=Iind[11:12], yind, powind, tail, alp=alp,legloc='topleft',nspc=0)
+dev.off()
+
+jpeg('figures_SCRS/1b Primary.jpg',res=400,height=h4,width=w4,units="in")
+  plot_dist(ECP_obj, OMind, Iind=Iind[1:10], yind, powind, tail, alp=alp,legloc='topleft',nspc=0)
+dev.off()
+
+jpeg('figures_SCRS/2 Primary consolidated.jpg',res=400,height=7,width=7,units="in")
+  #seed=seed+1;print(seed)
+  plot_all_marg_dens(ECP_obj,OMind, Iind[1:10],yind, col="#0000ff20",adj=3,seed=5,rand=T)
+dev.off()
+
+
+# --- West ----------------
+
+Iind = ECP_obj$Defaults[[def]]$Data[1:10]
+
+jpeg('figures_SCRS/6a Primary West pow.jpg',res=400,height=h4,width=w4,units="in")
+  powind=2
+  plot_dist(ECP_obj, OMind, Iind, yind, powind, tail, alp=alp,legloc='left',nspc=4)
+dev.off()
+
+jpeg('figures_SCRS/6b West Pow.jpg',res=400,height=h2,width=w2,units="in")
+  powind = 2
+  Seq_Pow_Calc_Marg(ECP_obj, OMind, Iind, yind, powind, alp=alp, tail=tail)
+dev.off()
+
+jpeg('figures_SCRS/6c West Pow.jpg',res=400,height=h2,width=w2,units="in")
+  powind = 2
+  Seq_Pow_Calc_Marg(ECP_obj, OMind, Iind, yind, powind, alp=0.003, tail)
+dev.off()
+
+jpeg('figures_SCRS/6d West Pow.jpg',res=400,height=h2,width=w2,units="in")
+  powind = 2
+  Seq_Pow_Calc_Marg(ECP_obj, OMind, Iind=16, yind, powind, alp=0.04, tail="LB")
+dev.off()
+
+
+
+# --- East -----------
+
+Iind = ECP_obj$Defaults[[def]]$Data[1:10]
+
+jpeg('figures_SCRS/7a Primary East pow.jpg',res=400,height=h4,width=w4,units="in")
+  powind=1
+  plot_dist(ECP_obj, OMind, Iind, yind, powind, tail, alp=alp,legloc='left',nspc=4)
+dev.off()
+
+jpeg('figures_SCRS/7b East Pow.jpg',res=400,height=h2,width=w2,units="in")
+  powind = 1
+  Seq_Pow_Calc_Marg(ECP_obj, OMind, Iind, yind, powind, alp=alp, tail=tail)
+dev.off()
+
+jpeg('figures_SCRS/7c East Pow.jpg',res=400,height=h2,width=w2,units="in")
+  powind = 1
+  Seq_Pow_Calc_Marg(ECP_obj, OMind, Iind, yind, powind, alp=0.003, tail)
+dev.off()
+
+jpeg('figures_SCRS/7d East Pow.jpg',res=400,height=h2,width=w2,units="in")
+  powind = 1
+  Seq_Pow_Calc_Marg(ECP_obj, OMind, Iind=15, yind, powind, alp=0.04, tail="LB")
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+jpeg('figures_SCRS/4 W skill.jpg',res=400,height=h1,width=w1,units="in")
+  EPTO(ECP_obj, OMind, Iind, yind, powind, tail, c(0.001,0.03), 20)
+dev.off()
+
+
+jpeg('figures_SCRS/8 E skill.jpg',res=400,height=h1,width=w1,units="in")
+  EPTO(ECP_obj, OMind, Iind, yind, powind, tail, c(0.001,0.03), 20)
+dev.off()
+
+
+
