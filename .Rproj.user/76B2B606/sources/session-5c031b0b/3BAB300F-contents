@@ -1,0 +1,173 @@
+
+
+
+
+
+# You would have to create some kind of array of 'missingness'
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+nsim=48
+ny = 107
+ni = 10
+nmiss = 2 # two per year
+
+miss_I = array(1,c(nsim,ny,ni))
+
+for(i in 1:nsim){
+  for(y in 1:ny){
+    miss_I[i,y,sample(1:ni,nmiss)] = 0
+  }
+
+}
+saveRDS(miss_I,"C:/temp/miss_I.rda") # you may not have to save / load, not sure how environments work with the MSE framework
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# B360) tuned to 0.6 PGK, 3 yr intervals
+# With Tom's VarC trick, varCadj=0.5
+# no cap, 20% up, 35% down but first 2 TAC settings 20%up/10%dowbn
+B360_W_miss2<-function(x,dset,bet0=0.81,deltabet=-0.032,maxUp=0.2,maxDown1=0.1,maxDown2=0.35,VarCadj=0.5){
+
+  TAC2020 = c(35032314,2269362)
+
+  cury<-dim(dset$TAC)[2]                # Most recent TAC advice year
+  lastyr<- dim(dset$Iobs)[3]            # Most recent Index observation
+
+  # !! At the moment Iobs for year 54 and 55 doesn't have the real data
+  relInd6 = dset$Iobs[x,3,]/mean(dset$Iobs[x,3,42:53],na.rm=T)	  # GOM_LAR_SUV (!use 42-53 for the average)
+  relInd7 = dset$Iobs[x,13,]/mean(dset$Iobs[x,13,42:54],na.rm=T)	# US_RR_66_144 (!use 42-54 for the average)
+  relInd8 = dset$Iobs[x,14,]/mean(dset$Iobs[x,14,42:54],na.rm=T)	# MEXUS_GOM_PLL (!use 42-54 for the average)
+  relInd9 = dset$Iobs[x,10,]/mean(dset$Iobs[x,10,46:55],na.rm=T)	# JPN_LL_West2 (!use 46-55 for the average)
+  relInd10 = dset$Iobs[x,12,]/mean(dset$Iobs[x,12,42:53],na.rm=T)	# CAN_SWNS (!use 42-53 for the average)
+
+  # Relative index weights
+  IwW <- c(1.33,2.55,1.39,3.96,2.88)       # Relative index weights
+  Itmp  <- c(relInd6[53],relInd7[53],relInd8[53],relInd9[53],relInd10[53])
+
+  Ind_W2017 <- weighted.mean(Itmp,IwW,na.rm=T)
+
+  Ind_W=numeric()
+
+  miss_I = readRDS("C:/temp/miss_I.rda") #  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  for (y in (lastyr-4):(lastyr)) {
+    Itmp  <- c(relInd6[y],relInd7[y],relInd8[y],relInd9[y],relInd10[y])
+    Itmp = Impt * miss_I[x,y,6:10]       # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    Ind_W[y] <- weighted.mean(Itmp,IwW,na.rm=T)
+  }
+
+  aveInd_W<-matrix(data=NA,nrow=200,ncol=200)
+  aveInd_W[x,lastyr]=mean(Ind_W[(lastyr-2):(lastyr)],na.rm=T)
+
+  # ----- Target component -----
+  if (lastyr<=64){
+    bet <- bet0 + deltabet*(lastyr-57)
+  }
+  else{
+    bet <- bet0 + deltabet*7
+  }
+
+  J_W<-matrix(data=NA,nrow=200,ncol=200)
+  J_W[x,lastyr]=mean(Ind_W[(lastyr-2):(lastyr)],na.rm=T)/Ind_W2017
+  TargCompW <- TAC2020[2] * bet * J_W[x,lastyr]
+
+  # setting the TAC
+  newTAC_W = TargCompW
+
+  # quadratic decrease below TvalW
+  TvalW=1.0
+  adjW=1
+  if(aveInd_W[x,lastyr]<TvalW){
+    adjW=aveInd_W[x,lastyr]/TvalW
+  }
+  newTAC_W = adjW*newTAC_W
+
+  oldTAC_W<-dset$TAC[x,cury]                                 # get the previous TAC advice
+  TAC_change <- newTAC_W/oldTAC_W                            # the implied ratio of the new to old advice
+
+  new_TAC_change <- exp(log(TAC_change)*VarCadj)             # multiple log of TAC change by VarCadj
+
+  maxDown<-maxDown2
+  if(lastyr<60)
+    maxDown<-maxDown1
+
+  if(new_TAC_change>(1+maxUp))new_TAC_change=(1+maxUp)       # apply 20% max upward TAC change constraint
+  if(new_TAC_change<(1-maxDown))new_TAC_change=(1-maxDown)   # apply 20% max downward TAC change constraint
+
+  TAC_W <- oldTAC_W * new_TAC_change                          # apply new TAC change
+
+  if (abs(oldTAC_W-TAC_W)<50000)
+    TAC_W <- oldTAC_W
+
+  TAC_W                                                       # return adjusted TAC (approximately half the adjustment downwards / upwards from previous TAC)
+
+  print("TACW")
+  print(TAC_W)
+}
+class(B360_W_miss2)<-"MP"
+
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 5c=B360) tuned to 0.6 PGK Br30, 3 yr intervals
+# With Tom's VarC trick
+# no cap, 20% up, 35% down but first 2 TAC settings 20%up/10%dowbn
+B360_E<-function(x,dset,alp0=1.235,deltaalp=0.204,maxUp=0.2,maxDown1=0.1,maxDown2=0.35,VarCadj=0.5){
+
+  TAC2020 = c(35032314,2269362)
+
+
+  aveInd_E<-matrix(data=NA,nrow=200,ncol=200)
+  aveInd_E[x,lastyr]=mean(Ind_E[(lastyr-2):(lastyr)],na.rm=T)
+
+  # ----- Target component -----
+  if (lastyr<=60){
+    alp <- alp0 + deltaalp*(lastyr-57)
+  }
+  else{
+    alp <- alp0 + deltaalp*4
+  }
+
+  J_E<-matrix(data=NA,nrow=200,ncol=200)
+  J_E[x,lastyr]=mean(Ind_E[(lastyr-2):(lastyr)],na.rm=T)/Ind_E2017
+  TargCompE <- TAC2020[1] * alp * J_E[x,lastyr]
+
+  # setting the TAC
+  newTAC_E=TargCompE
+
+  # quadratic decrease below TvalE
+  TvalE=1.0
+  adjE=1
+  if(aveInd_E[x,lastyr]<TvalE){
+    adjE=aveInd_E[x,lastyr]/TvalE
+  }
+  newTAC_E=adjE*newTAC_E
+
+  oldTAC_E<-dset$TAC[x,cury]                                 # get the previous TAC advice
+  TAC_change <- newTAC_E/oldTAC_E                            # the implied ratio of the new to old advice
+
+  new_TAC_change <- exp(log(TAC_change)*VarCadj)             # multiple log of TAC change by VarCadj
+
+  maxDown<-maxDown2
+  if(lastyr<60)
+    maxDown<-maxDown1
+
+  if(new_TAC_change>(1+maxUp))new_TAC_change=(1+maxUp)       # apply 20% max upward TAC change constraint
+  if(new_TAC_change<(1-maxDown))new_TAC_change=(1-maxDown)   # apply 30% max downward TAC change constraint
+
+  TAC_E <- oldTAC_E * new_TAC_change                          # apply new TAC change
+
+  if (abs(oldTAC_E-TAC_E)<1000000)
+    TAC_E <- oldTAC_E
+
+  TAC_E                                                       # return adjusted TAC (approximately half the adjustment downwards / upwards from previous TAC)
+
+  print("TACE")
+  print(TAC_E)
+}
+class(B360_E)<-"MP"
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
