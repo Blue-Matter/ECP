@@ -23,19 +23,19 @@ h4 = 9; w4 = 10
 # --- Primary ----------------------------
 
 def=1
-OMind =1:48; Iind = ECP_obj$Defaults[[def]]$Data; powind=ECP_obj$Defaults[[def]]$powind; tail=ECP_obj$Defaults[[def]]$tail; alp = ECP_obj$Defaults[[def]]$alph
+OMind =1:48; powind=ECP_obj$Defaults[[def]]$powind; tail=ECP_obj$Defaults[[def]]$tail; alp = ECP_obj$Defaults[[def]]$alph
 
 jpeg('figures_SCRS/1a Primary.jpg',res=400,height=h1,width=w1,units="in")
-   plot_dist(ECP_obj, OMind, Iind=Iind[11:12], yind, powind, tail, alp=alp,legloc='topleft',nspc=0)
+   plot_dist(ECP_obj, OMind, Iind = ECP_obj$Defaults[[1]]$Data, yind, powind, tail, alp=alp,legloc='topleft',nspc=0)
 dev.off()
 
 jpeg('figures_SCRS/1b Primary.jpg',res=400,height=h4,width=w4,units="in")
-  plot_dist(ECP_obj, OMind, Iind=Iind[1:10], yind, powind, tail, alp=alp,legloc='topleft',nspc=0)
+  plot_dist(ECP_obj, OMind, Iind = ECP_obj$Defaults[[2]]$Data, yind, powind, tail, alp=alp,legloc='topleft',nspc=0)
 dev.off()
 
 jpeg('figures_SCRS/2 Primary consolidated.jpg',res=400,height=7,width=7,units="in")
   #seed=seed+1;print(seed)
-  plot_all_marg_dens(ECP_obj,OMind, Iind[1:10],yind, col="#0000ff20",adj=3,seed=5,rand=T)
+  plot_all_marg_dens(ECP_obj,OMind, Iind = ECP_obj$Defaults[[2]]$Data, yind, col="#0000ff20",adj=3,seed=5,rand=T)
 dev.off()
 
 
