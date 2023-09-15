@@ -54,12 +54,12 @@ Index_compiler<-function(dir=NULL,name=NULL, MPind=NULL, dummy_obs=T, First_Yr =
     MSEobj<-readRDS(fileref[OM])
     PPDi = MSEobj@PPD[[MPind]][[Eastind]]$Iobs # second tier is stock and that is identical in terms of index reporting - same indices are available to both stocks
     PPD[,OM,1:nind,] = PPDi[,,yind]
-  
+
     EC = MakeEComb(PPDi) # eastern combined
     PPD[,OM,nind+1,]=EC[,yind]
     WC = MakeWComb(PPDi) # western combined
     PPD[,OM,nind+2,]=WC[,yind]
-    
+
     Pow[,OM,1]= is_Blow(MSEobj,MPind,PPDy,stockind=1)
     Pow[,OM,2]= is_Blow(MSEobj,MPind,PPDy,stockind=2)
     Pow[,OM,3]= is_Blow(MSEobj,MPind,PPDy,stockind=1:2)
@@ -78,7 +78,7 @@ Index_compiler<-function(dir=NULL,name=NULL, MPind=NULL, dummy_obs=T, First_Yr =
 
   dimnames(PPD)[[1]] = dimnames(Pow)[[1]] = paste0("Sim_",1:48)
   dimnames(PPD)[[2]] = dimnames(Pow)[[2]] = c(paste0("Ref_",1:48),paste0("Rob_",1:44))
-  dimnames(PPD)[[3]] = c(Indices$Name,"East Combined","West Combined")
+  dimnames(PPD)[[3]] = c(Indices$Name,"East Combined (MP)","West Combined (MP)")
   dimnames(PPD)[[4]] = Yrs
   dimnames(Pow)[[3]] = c("E 1/2 Blim","W 1/2 Blim","EorW 1/2 Blim", "E Blim", "W Blim")
 
@@ -89,19 +89,20 @@ Index_compiler<-function(dir=NULL,name=NULL, MPind=NULL, dummy_obs=T, First_Yr =
 
   OM_def = as.list(apply(Design,2,function(x){unique(x)}))
   OM_def[[5]] = "Ref"
-  #OM_defE = OM_def
-  #OM_defE[[1]] = c(3) # Eastern ECP is rec lev 3
-
-  Defaults[[1]] = list(c(1,2,3,4,5,6,10,12,13,14,15,16), 1:8, OM_def,  0.05,   NaN, "interval") # Generic default ECP - all input indices
-  Defaults[[2]] = list(16,                         1:8, OM_def,  0.0365, 2,   "LB")             # Preliminary western ECP - all input indices
-  Defaults[[3]] = list(15,                    1:8, OM_def, 0.0365,  1,   "LB")           # Preliminary eastern ECP - all input indices only rec lev 3
-
-  for(i in 1:3) names(Defaults[[i]]) = c("Data","yind","OM","alph","powind","tail")
-  names(Defaults)=c("Primary","West. Secondary","East. Secondary")
+  yind = 1:8
+  
+  #                     Data                      yrs   OMs     alph  powind tail
+  Defaults[[1]] = list(c(15,16),                  yind, OM_def, 0.05, NaN,   "interval") # Primary Combined MP indices
+  Defaults[[2]] = list(c(1,2,3,4,5,6,10,12,13,14),yind, OM_def, 0.05, NaN,   "interval") # Primary individual indices
+  Defaults[[3]] = list(c(3,10,12,13,14),          yind, OM_def, 0.05, NaN,   "interval") # Primary individual western indices
+  Defaults[[4]] = list(c(1,2,4,5,6),              yind, OM_def, 0.05, NaN,   "interval") # Primary individual eestern indices
+  
+  for(i in 1:length(Defaults)) names(Defaults[[i]]) = c("Data","yind","OM","alph","powind","tail")
+  names(Defaults)=c("Combined (MP)","Individual","W. Ind","E. Ind")
 
   Obs = PPD[1,1,,]
   if(dummy_obs)  Obs[,dummycut:npy] = NA
-  if(!dummy_obs)Obs[,dummycut:npy] = NA
+  if(!dummy_obs) Obs[,dummycut:npy] = NA
 
   return(list(PPD=PPD, OM_Design=Design, Defaults = Defaults, Obs = Obs, Pow=Pow,
          First_Yr = First_Yr, Version = packageVersion('ABTMSE'),Sys.time=Sys.time()))
@@ -129,33 +130,33 @@ Add_Index_Data=function(ECP_obj,xlsheet="G:/Shared drives/BM shared/1. Projects/
 
 
 Add_Comb_Index_Data=function(ECP_obj,xlsheet="G:/Shared drives/BM shared/1. Projects/Bluefin_ECP/data/New Indices.xlsx",MSEny=107){
-  
-  
+
+
   nind = dim(ECP_obj$Obs)[1]
   ny = dim(ECP_obj$Obs)[2]
   Obsi = array(NA,c(1,nind,MSEny))
-  
+
   nd = as.data.frame(read_excel(xlsheet,sheet="Rescaled_Indices"))
   nd[nd==0]=NA
   obsnam = dimnames(ECP_obj$Obs)[[1]]
   datcols = 3:ncol(nd)
   inds = match(names(nd[,datcols]),obsnam)
   Obs_yind = as.numeric(nd$Year)-1964
-  
+
   Obsi[1,inds,Obs_yind]=t(nd[,datcols])
-  
+
   EC = MakeEComb(Obsi)
   WC = MakeWComb(Obsi)
-  
+
   PPDyr = dimnames(ECP_obj$Obs)[[2]]
   PPD_yind = PPDyr%in%nd$Year
   Obs_yind = (1964+1:MSEny)%in%PPDyr
-  
+
   ECP_obj$Obs[15,]=EC[Obs_yind]
   ECP_obj$Obs[16,]=WC[Obs_yind]
-  
+
   ECP_obj
-  
+
 }
 
 slp4<-function(y){
@@ -169,20 +170,20 @@ slp4<-function(y){
   (1/SS)*sum((x1-mux)*(y-muy),na.rm=T)
 }
 
-#                                  
+#
 MakeEComb = function(PPDi,IwE = c(1.33,1.66,1.06,1.43,1.33)){       # Relative index weights){
-  
+
   nsim=dim(PPDi)[1]
   ny= dim(PPDi)[3]
   Ind_E = array(NA,c(nsim,ny))
-  
+
   for(x in 1:nsim){
     relInd1 = PPDi[x,1,]/mean(PPDi[x,1,50:53],na.rm=T)	# FR_AER_SUV2 (!use 2014-2017 for the average)
     relInd2 = PPDi[x,2,]/mean(PPDi[x,2,48:52],na.rm=T)	# MED_LAR_SUV (!use 2012-2016 for the average)
     relInd3 = PPDi[x,4,]/mean(PPDi[x,4,51:54],na.rm=T)	# GBYP_AER_SUV_BAR (!use 2015-2018 for the average)
     relInd4 = PPDi[x,5,]/mean(PPDi[x,5,48:54],na.rm=T)	# MOR_POR_TRAP (!use 2012-2018 for the average)
     relInd5 = PPDi[x,6,]/mean(PPDi[x,6,48:55],na.rm=T)	# JPN_LL_NEAtl2 (!use 2012-2019 for the average)
-  
+
     for (y in 1:ny) {
       Itmp  <- c(relInd1[y],relInd2[y],relInd3[y],relInd4[y],relInd5[y])
       Ind_E[x,y] <- weighted.mean(Itmp,IwE,na.rm=T)
@@ -194,18 +195,18 @@ MakeEComb = function(PPDi,IwE = c(1.33,1.66,1.06,1.43,1.33)){       # Relative i
 
 
 MakeWComb = function(PPDi,IwW = c(1.33,2.55,1.39,3.96,2.88)){        # Relative index weights){
-                     
+
    nsim=dim(PPDi)[1]
    ny= dim(PPDi)[3]
    Ind_W = array(NA,c(nsim,ny))
-   
+
    for(x in 1:nsim){
      relInd6 = PPDi[x,3,]/mean(PPDi[x,3,42:53],na.rm=T)	  # GOM_LAR_SUV (!use 42-53 for the average)
      relInd7 = PPDi[x,13,]/mean(PPDi[x,13,42:54],na.rm=T)	# US_RR_66_144 (!use 42-54 for the average)
      relInd8 = PPDi[x,14,]/mean(PPDi[x,14,42:54],na.rm=T)	# MEXUS_GOM_PLL (!use 42-54 for the average)
      relInd9 = PPDi[x,10,]/mean(PPDi[x,10,46:55],na.rm=T)	# JPN_LL_West2 (!use 46-55 for the average)
      relInd10 = PPDi[x,12,]/mean(PPDi[x,12,42:53],na.rm=T)	# CAN_SWNS (!use 42-53 for the average)
-     
+
      for (y in 1:ny) {
        Itmp  <- c(relInd6[y],relInd7[y],relInd8[y],relInd9[y],relInd10[y])
        Ind_W[x,y] <- weighted.mean(Itmp,IwW,na.rm=T)

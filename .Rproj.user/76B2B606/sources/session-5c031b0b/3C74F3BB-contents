@@ -23,17 +23,65 @@ h4 = 9; w4 = 10
 # --- Primary ----------------------------
 
 def=1
-OMind =1:48; Iind = ECP_obj$Defaults[[def]]$Data; powind=ECP_obj$Defaults[[def]]$powind; tail=ECP_obj$Defaults[[def]]$tail; alp = ECP_obj$Defaults[[def]]$alph
+OMind =1:48; powind=ECP_obj$Defaults[[def]]$powind; tail=ECP_obj$Defaults[[def]]$tail; alp = ECP_obj$Defaults[[def]]$alph
 
-jpeg('figures_SCRS/1 Primary.jpg',res=400,height=h4,width=w4,units="in")
-   plot_dist(ECP_obj, OMind, Iind, yind, powind, tail, alp=alp,legloc='topleft',nspc=0)
+jpeg('figures_SCRS/2a Primary.jpg',res=400,height=h1,width=w1,units="in")
+   plot_dist(ECP_obj, OMind, Iind = ECP_obj$Defaults[[1]]$Data, yind, powind, tail, alp=alp,legloc='topleft',nspc=0)
 dev.off()
 
-jpeg('figures_SCRS/2 Primary consolidated.jpg',res=400,height=7,width=7,units="in")
+jpeg('figures_SCRS/2b Primary.jpg',res=400,height=h4,width=w4,units="in")
+  plot_dist(ECP_obj, OMind, Iind = ECP_obj$Defaults[[2]]$Data, yind, powind, tail, alp=alp,legloc='topleft',nspc=0)
+dev.off()
+
+jpeg('figures_SCRS/3 Primary consolidated.jpg',res=400,height=7,width=7,units="in")
   #seed=seed+1;print(seed)
-  plot_all_marg_dens(ECP_obj,OMind, Iind,yind, col="#0000ff20",adj=3,seed=5,rand=T)
+  plot_all_marg_dens(ECP_obj,OMind, Iind = ECP_obj$Defaults[[2]]$Data, yind, col="#0000ff20",adj=3,seed=5,rand=T)
 dev.off()
 
+jpeg('figures_SCRS/4a Correlation West.jpg',res=400,height=7,width=7,units="in")
+  plot_CC(ECP_obj, 0.5,0.75, maxn=10, OMind, Iind = ECP_obj$Defaults[[3]]$Data,lnam=T,lasinv=T)
+dev.off()
+
+jpeg('figures_SCRS/4b Correlation East.jpg',res=400,height=7,width=7,units="in")
+   plot_CC(ECP_obj, 0.5,0.75, maxn=10, OMind, Iind = ECP_obj$Defaults[[4]]$Data,lnam=T,lasinv=T)
+dev.off()
+
+Com = Seq_Pow_Calc_Marg(ECP_obj, OMind, Iind = ECP_obj$Defaults[[1]]$Data, yind, powind=NaN, alp=0.05, tail="interval")
+Ind = Seq_Pow_Calc_Marg(ECP_obj, OMind, Iind = ECP_obj$Defaults[[2]]$Data, yind, powind=NaN, alp=0.05, tail="interval")
+
+jpeg('figures_SCRS/5 Type I error.jpg',res=400,height=h2,width=w2,units="in")
+
+  par(mfrow=c(1,2),mai=c(0.5,0.45,0.4,0.05),omi=c(0.4,0.4,0.01,0.01))
+  py = t(rbind(Com[1,,drop=F],Ind[1,,drop=F]))
+  ys = 3:8
+  matplot(colnames(Com)[ys],py[ys,],type="l",col=c("red","blue"),lwd=2,lty=1,ylim=c(0,max(py,na.rm=T)))
+  grid()
+  matplot(colnames(Com)[ys],py[ys,],type="l",col=c("red","blue"),lwd=2,lty=1,add=T)
+  mtext("Total annual Type I error",line=0.6)
+
+  invprod = function(x){
+    x0 = x
+    x0[is.na(x0)]=0
+    x1=1-cumprod(1-x0)
+    x1[is.na(x)]=NA
+    x1
+  }
+
+  pc = apply(py,2,invprod)
+  matplot(colnames(Com)[ys],pc[ys,],type="l",col=c("red","blue"),lwd=2,lty=1,ylim=c(0,1))
+  grid()
+  matplot(colnames(Com)[ys],pc[ys,],type="l",col=c("red","blue"),lwd=2,lty=1,add=T)
+  mtext("Cumulative Type I error",line=0.6)
+
+  legend('topleft',legend=c("Combined indices (n=2)","Individual indices (n=10)"),text.col=c("red","blue"),bty="n")
+  mtext("Type I error",2,line=0.4,outer=T)
+  mtext("Projection Year",1,line=0.4,outer=T)
+
+dev.off()
+
+
+
+#  !!!!!!!!!
 
 # --- West ----------------
 
