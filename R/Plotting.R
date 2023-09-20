@@ -303,21 +303,24 @@ plot_all_marg_dens=function(ECP_obj,OMind=1:48, Iind=NULL,yind=2:6, col="#0000ff
 
 
 
-
-plot_CC<-function(ECP_obj,quanty=0.5,ptcex=0.6,maxn=10,OMind=1:48, Iind=NULL,powind=1,dopow=F){
+plot_CC<-function(ECP_obj,quanty=0.5,ptcex=0.6,maxn=10,OMind=1:48, Iind=NULL,powind=1,dopow=F,lasinv=F,lnam=F){
 
   if(is.null(Iind))Iind=ECP_obj$Defaults$Data
 
   out=get_pred_sim(ECP_obj,OMind,Iind,powind)
   preds=out$preds
   obs=out$obs
-  nams=out$nams
+  if(!lnam)nams=out$nams
+  if(lnam)nams=out$lnams
   pows=out$pows
   ndat = dim(preds)[2]
   ni <- min(ndat,maxn)
   cols <- c("#0000ff15","black","#ff000045")
   par(mfrow=c(ni-1,ni-1),mai=rep(0,4),omi=c(0.55,0.75,0.05,0.05))
   cutoff= c(quanty/100,(100-quanty)/100)
+  labys = c(letters,paste0(letters,letters),paste0(letters,letters,letters),paste0(letters,letters,letters,letters))
+  labys = paste0("(",labys,")")
+  k = 0
 
   for(i in 2:ni){
 
@@ -334,9 +337,11 @@ plot_CC<-function(ECP_obj,quanty=0.5,ptcex=0.6,maxn=10,OMind=1:48, Iind=NULL,pow
 
         if(!dopow){
           plot(preds[,j],preds[,i],pch=19,xlim=xlim,ylim=ylim,cex=ptcex,col=cols[1],axes=F)
+          k=k+1; mtext(labys[k],3,adj=0.02,line=-1,cex=0.6)
         }else{
           plot(preds[!pows,j],preds[!pows,i],pch=19,xlim=xlim,ylim=ylim,cex=ptcex,col=cols[1],axes=F)
           points(preds[pows,j],preds[pows,i],pch=19,cex=ptcex,col=cols[3])
+          k=k+1; mtext(labys[k],3,adj=0.02,line=-1,cex=0.6)
         }
 
         axis(1,c(-100,100))
@@ -351,8 +356,13 @@ plot_CC<-function(ECP_obj,quanty=0.5,ptcex=0.6,maxn=10,OMind=1:48, Iind=NULL,pow
 
       }
 
-      if(j==1)mtext(nams[i],2,line=2,cex=0.6,las=2)
-      if(i==ni)mtext(nams[j],1,line=1,cex=0.6,las=2)
+      if(!lasinv){
+        if(j==1)mtext(nams[i],2,line=2,cex=0.6,las=2)
+        if(i==ni)mtext(nams[j],1,line=1,cex=0.6,las=2)
+      }else{
+        if(j==1)mtext(nams[i],2,line=2,cex=0.6,srt=90)
+        if(i==ni)mtext(nams[j],1,line=1,cex=0.6,las=1)
+      }
       #if(j==1)mtext(i,2,line=2,cex=0.5,las=2)
       #if(i==nplotted)mtext(j,1,line=1,cex=0.5,las=2)
 
