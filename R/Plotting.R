@@ -104,14 +104,26 @@ getcrit = function(vec,vecalt,tail,alp){
 
 densalator = function(vec){
 
+  # vec = rlnorm(10000,0,0.5)
+
   if(all(vec>0,na.rm=T)){
     dens = density(log(vec),na.rm=T)
+    dx = 0.0001
+    dexpx = exp(dens$x+dx)-exp(dens$x)
+    dexpx_dx = dexpx/dx
+    dens$y = dens$y/dexpx_dx
     dens$x = exp(dens$x)
   }else{
     dens = density(vec,na.rm=T)
   }
+
+  # plot(dens);  abline(v = quantile(vec,c(0.05,0.95)))
+
   dens
 }
+
+
+
 
 dens_Proj_pow = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:8, col, donam=T, powind=1,tail="LB",alp=0.025,fraclab=FALSE){
 
