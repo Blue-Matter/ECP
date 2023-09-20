@@ -77,7 +77,7 @@ dens_Proj = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:6,tail="LB",alp=
       for(i in 1:length(crit))lines(Yrs[yi]+c(0,0.95),rep(crit[i],2),col="blue",lty=1)
       dens=densalator(vec)
       ys = 0.95*(dens$y / max(dens$y,na.rm=T))
-      polygon(Yrs[yi]+ys,dens$x,col='#0000ff90',border=NA)
+      polygon(Yrs[yi]+ys,dens$x,col='#0000ff60',border=NA)
     }
     if(!is.na(Obs[yi])) lines(Yrs[yi]+c(0,0.95),rep(Obs[yi],2),lwd=3)
   }
@@ -157,7 +157,7 @@ dens_Proj_pow = function(ECP_obj, Iplot = 1, OMind = 1:48, yind = 1:8, col, dona
       densalt=densalator(vecalt)
       ysalt = 0.95*(densalt$y / max(densalt$y,na.rm=T))
 
-      polygon(Yrs[yy]+ysnull,densnull$x,col='#0000ff90', border=NA)
+      polygon(Yrs[yy]+ysnull,densnull$x,col='#0000ff60', border=NA)
       polygon(Yrs[yy]+ysalt, densalt$x, col='#ff000090', border=NA)
 
       #text(Yrs[yy]+0.6,quantile(vecalt,0.99,na.rm=T),round(out[[2]]*100,0),col="red",cex=0.8)
@@ -196,8 +196,8 @@ plot_dist=function(ECP_obj =NULL, OMind=1:48, Iind=1:10, yind=1:8, powind=1, tai
         dens_Proj_pow(ECP_obj, Iplot = Iind[i], OMind = OMind, yind = yind,col=col,powind=as.numeric(powind),tail=tail[i],alp=alp,fraclab=(i==1))
       }
       if(i==1){
-        if(is.na(powind))legend(legloc,cex=1,legend = c(rep(".",nspc),"Predicted","Observed"),text.col=c(rep("white",nspc),"#0000ff95",'black'),text.font=2,bty='n')
-        if(!is.na(powind))legend(legloc,cex=1,legend = c(rep(".",nspc),"Null","Alternative","Observed"),text.col=c(rep("white",nspc),"#0000ff95","#ff000095",'black'),text.font=2,bty='n')
+        if(is.na(powind))legend(legloc,cex=1,legend = c(rep(".",nspc),"Predicted","Observed"),text.col=c(rep("white",nspc),"#0000ff60",'black'),text.font=2,bty='n')
+        if(!is.na(powind))legend(legloc,cex=1,legend = c(rep(".",nspc),"Null","Alternative","Observed"),text.col=c(rep("white",nspc),"#0000ff60","#ff000095",'black'),text.font=2,bty='n')
       }
     }
 

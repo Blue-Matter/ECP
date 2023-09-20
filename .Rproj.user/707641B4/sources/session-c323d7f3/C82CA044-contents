@@ -1,0 +1,56 @@
+# === Comple Posterior Predicted Data =================================================================================================================
+
+library(ABTMSE)
+library(readxl)
+library(corpcor)
+packageVersion('ABTMSE')
+loadABT()
+
+setwd("G:/Shared drives/BM shared/1. Projects/Bluefin_ECP/code")
+source('ECP source.R') # load BR
+
+ECP_obj = Index_compiler(dir = "C:/temp2/ECP2/")
+
+ECP_obj_I = Add_Index_Data(ECP_obj,xlsheet="G:/Shared drives/BM shared/1. Projects/Bluefin_ECP/data/New Indices_v4.xlsx")
+
+ECP_obj_IC = Add_Comb_Index_Data(ECP_obj_I,xlsheet="G:/Shared drives/BM shared/1. Projects/Bluefin_ECP/data/New Indices.xlsx")
+
+ECP_obj_ICS = Append_Index_Slopes(ECP_obj_IC)
+
+ECP_obj_ICS$Obs[15:16,4] = NA # remove 2023 combined index as it was calculated from only the Japanese LL indices
+
+saveRDS(ECP_obj_ICS, file="ECP_obj_final.rda")
+
+#ECP_obj_SOO = Append_SOO(ECP_obj_slp, dir = "C:/temp2/ECP2/")
+#saveRDS(ECP_obj_SOO, file="ECP_obj_SOO.rda")
+
+
+
+# --- End of script ---------------
+
+# vvv just some plotting vvv
+plot_marg_dens(ECP_obj_SOO)
+plot_marg_dens(ECP_obj)
+plot_mdist(ECP_obj)
+plot_CC(ECP_obj,quanty=0.5,ptcex=0.3,maxn=20)
+
+plot_marg_dens_pow(ECP_obj,Iind=1:10)
+plot_marg_dens_pow(ECP_obj,Iind=1:10,line=T)
+plot_CC(ECP_obj,quanty=0.5,ptcex=0.3,maxn=20,dopow=T)
+plot_mdist_pow(ECP_obj)
+
+par(mfrow=c(5,3),mai=c(0.3,0.3,0.02,0.02),omi=c(0.3,0.3,0.01,0.01))
+for(ymax in 4:18)plot_mdist_pow(ECP_obj,yind=1:ymax,byyr=T,add=T,labs=F)
+mtext("Multivariate distance, D",1,line=0.5,outer=T)
+mtext("Density",2,line=0.5,outer=T)
+
+nalpha = 10
+alphas = seq(5,30,length.out=nalpha)/100
+par(mfrow=c(5,2),mai=c(0.3,0.3,0.02,0.02),omi=c(0.3,0.3,0.01,0.01))
+for(i in 1:nalpha)plot_mdist_pow(ECP_obj,yind=1:5,alpha=alphas[i],byyr=T,add=T,labs=F)
+mtext("Multivariate distance, D",1,line=0.5,outer=T)
+mtext("Density",2,line=0.5,outer=T)
+
+
+
+# Indices[c(1,2,3,4,5,6,10,12,13,14),]
