@@ -43,7 +43,7 @@ controlbar <- dashboardControlbar(overlay = FALSE, width=450,skin='light', colla
 )
 
 # -- lhs sidebar ----
-sidebar <- dashboardSidebar(
+sidebar <- shinydashboardPlus::dashboardSidebar(
   collapsed = TRUE,
   sidebarMenu(id='sidebar',
     menuItem("Data Projection", tabName = "Viz", icon = icon("stats",lib="glyphicon")),
@@ -107,7 +107,7 @@ body <- dashboardBody(height = 800,
 
 # -- page ----
 
-dashboardPage(
+shinydashboardPlus::dashboardPage(
   skin = "blue-light",
   header=header,
   sidebar=sidebar,
