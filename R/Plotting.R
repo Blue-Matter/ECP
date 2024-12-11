@@ -528,17 +528,13 @@ plot_Err = function(Err,Iind,powind,alp,main){
   if(is.na(powind))Err3[,2]=NA
   Err3[Err3[,1]==0,]=NA
 
-  ys = colnames(Err)
+  ys = as.numeric(colnames(Err))
   par(mfrow=c(1,2),mai=c(0.4,0.4,0.05,0.05),omi=c(0.4,0.4,0.3,0.01))
-  matplot(ys,t(Err),col="white",lty=1,type="l",xlab="",ylab="",ylim=c(0,1))
-  grid()
-  matplot(ys,t(Err),col=c("blue","red"),lty=1,type="l",add=T,lwd=2)
+  matplot(ys,t(Err),col=c("blue","red"),lty=1, type="l", panel.first = grid(),lwd=2, xlab = "", ylab = "", ylim = c(0, 1))
   if(!is.na(powind))legend('topright',legend=c("Type I","Type II"),text.col=c("blue","red"),bty="n")
   if(is.na(powind))legend('topright',legend=c("Type I"),text.col=c("blue"),bty="n")
 
-  matplot(ys,Err3,col="white",lty=1,type="l",xlab="",ylab="",ylim=c(0,1))
-  grid()
-  matplot(ys,Err3,col=c("blue","red"),lty=1,type="l",add=T,lwd=2)
+  matplot(ys,Err3,col=c("blue","red"),lty=1, type="l", lwd=2, panel.first = grid(), xlab="",ylab="",ylim=c(0,1))
   if(!is.na(powind))legend('topleft',legend=c("Cumu. Type I","Cumu. Power"),text.col=c("blue","red"),bty="n")
   if(is.na(powind))legend('topleft',legend=c("Cumu. Type I"),text.col=c("blue"),bty="n")
 
