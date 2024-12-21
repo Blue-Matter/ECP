@@ -45,7 +45,7 @@ get_pred_sim=function(ECP_obj,OMind,Iind,powind=1){
   preds = array(NA,c(nsim*nOM,ndat))
   obs = rep(NA,ndat)
   for(i in 1:ndat){
-    normswitch = any(PPD[,,ds[i],ys[i]]<0)
+    normswitch = any(PPD[,,ds[i],ys[i]]<0, na.rm = TRUE)
     if(normswitch){
       preds[,i] = as.vector(PPD[,,ds[i],ys[i]])
       obs[i] =Obs[ds[i],ys[i]]
@@ -80,7 +80,7 @@ get_pred_sim_yr=function(ECP_obj,OMind,Iind,yind=1:6,powind=1){
   preds = array(NA,c(nsim*nOM,ndat))
   obs = rep(NA,ndat)
   for(i in 1:ndat){
-    normswitch = any(PPD[,,ds[i],ys[i]]<0)
+    normswitch = any(PPD[,,ds[i],ys[i]]<0, na.rm = TRUE)
     if(normswitch){
       preds[,i] = as.vector(PPD[,,ds[i],ys[i]])
       obs[i] =Obs[ds[i],ys[i]]
