@@ -32,13 +32,13 @@ getsegment<-function(densobj,thresh,lower=T){
 get_pred_sim=function(ECP_obj,OMind,Iind,powind=1){
 
   Obs = ECP_obj$Obs[Iind,,drop=F]
-  PPD = ECP_obj$PPD[,OMind,Iind,]
+  PPD = ECP_obj$PPD[,OMind,Iind,,drop=F]
   nsim = dim(PPD)[1]
   nd = dim(PPD)[3]
   ny = dim(PPD)[4]
   nOM = length(OMind)
-  varfunc = function(x)sd(x)>0.00001 & !is.na(sd(x))
-  add2calc = apply(PPD[,1,,],2:3,varfunc)&!is.na(Obs)
+  varfunc = function(x) sd(x, na.rm = TRUE) > 0.00001
+  add2calc = apply(PPD,3:4,varfunc) & !is.na(Obs)
   ys = array(rep(1:ny,each=nd),c(nd,ny))[add2calc]
   ds = array(rep(1:nd,ny),c(nd,ny))[add2calc]
   ndat=sum(add2calc)
@@ -72,7 +72,7 @@ get_pred_sim_yr=function(ECP_obj,OMind,Iind,yind=1:6,powind=1){
   nd = dim(PPD)[3]
   ny = dim(PPD)[4]
   nOM = length(OMind)
-  varfunc = function(x)sd(x)>0.00001 & !is.na(sd(x))
+  varfunc = function(x) sd(x, na.rm = TRUE) > 0.00001
   add2calc = apply(PPD[,1,,,drop=F],3:4,varfunc)
   ys = array(rep(1:ny,each=nd),c(nd,ny))[add2calc]
   ds = array(rep(1:nd,ny),c(nd,ny))[add2calc]
